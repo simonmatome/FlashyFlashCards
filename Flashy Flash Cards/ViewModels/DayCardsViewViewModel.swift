@@ -348,8 +348,6 @@ class DayCardsViewViewModel: ObservableObject {
                         }
                         boxContents[subjectIndex] = subjectContent
                     }
-                    // Something was wrong with the way boxContents was assigned to the boxes given the context of the guard statement.
-//                    boxes[box] = boxContents
                 }
                 try await load(path: .cards_data)
             } catch {
