@@ -11,6 +11,11 @@ struct SubjectSkeleton: View {
     @EnvironmentObject var flashFlashVM: DayCardsViewViewModel
     let layout: LayoutProperties
     @Binding var subject: Subject
+    @Binding var selection: SubjectTheme
+    var isNewSubject: Bool
+    var canceLogic: () -> Void
+    var confirmLogic: () -> Void
+    
     
     @State private var topicHeading: String = ""
     
@@ -22,7 +27,7 @@ struct SubjectSkeleton: View {
                         .font(.system(size: layout.customFontSize.mediumLarge))
                         .autocorrectionDisabled()
                     
-                        SubjectThemePicker(selection: $subject.marker)
+                        SubjectThemePicker(selection: $selection)
                     
                         BackgroundPicker(selection: $subject.fileBackground)
                 } header: {
@@ -33,21 +38,17 @@ struct SubjectSkeleton: View {
                         .multilineTextAlignment(.center)
                 }
                 Section {
-                    ForEach(Array(subject.topics.keys), id: \.self) { key in
+                    ForEach(Array($subject.topics.values), id: \.id) { $topic in
                         NavigationLink {
-                            EditTopicView(layout: layout, topic: Binding(get: {
-                                subject.topics[key]!
-                            }, set: {
-                                subject.topics[key]! = $0
-                            }))
+                            EditTopicView(layout: layout, topic: $topic)
                         } label: {
-                            Text("\(subject.topics[key, default: Topic.emptyTopic].name)")
+                            Text("\(topic.name)")
                                 .font(.system(size: layout.customFontSize.mediumLarge))
                         }
                     }
                     .onDelete { indices in
                         var topicID = UUID()
-                        let keys  = Array(subject.topics.keys)
+                        let keys  = Array(subject.topics.keys.sorted())
                         for index in indices {
                             let keyToDelete = keys[index]
                             topicID = keyToDelete
@@ -79,11 +80,26 @@ struct SubjectSkeleton: View {
                         .multilineTextAlignment(.center)
                 }
             }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        canceLogic()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        confirmLogic()
+                    }
+                    .disabled(isNewSubject ? subject.title.isEmpty : false)
+                }
+            }
+            .navigationTitle(isNewSubject ? "Add Subject" : "Edit Subject")
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }
 
-#Preview {
-    SubjectSkeleton(layout: currentLayout, subject: .constant(Subject.sample[0]))
-        .environmentObject(DayCardsViewViewModel())
-}
+//#Preview {
+//    SubjectSkeleton(layout: currentLayout, subject: .constant(Subject.sample[0]))
+//        .environmentObject(DayCardsViewViewModel())
+//}

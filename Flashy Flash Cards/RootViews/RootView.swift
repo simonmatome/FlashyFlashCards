@@ -35,7 +35,7 @@ struct RootView: View {
                     }
                     .tag("statistics")
                 
-                SettingsView()
+                SettingsView(layout: layoutProps)
                     .tabItem {
                         Label("Settings", systemImage: "gearshape.fill")
                     }

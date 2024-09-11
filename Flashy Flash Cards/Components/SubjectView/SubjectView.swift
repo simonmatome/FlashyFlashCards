@@ -11,13 +11,13 @@ struct SubjectView: View {
     @EnvironmentObject var store: LibraryViewViewModel
     @Binding var subjects: [Subject]
     @Binding var subject: Subject
-    @Binding var editedSubject: Subject
-    @Binding var isEditedSubject: Bool
     let layout: LayoutProperties
     
     @State private var pressed = false
     @State private var deleteSubject: Bool = false
     @State private var presentCards: Bool = false
+    @State private var isEditSubject: Bool = false
+    @State private var editedSubject: Subject = Subject.emptySubject
     @State private var selectedTopic: Topic = Topic.emptyTopic
     @State private var oldSubjectName = ""
     
@@ -27,19 +27,13 @@ struct SubjectView: View {
                 SubjectHeaderView(
                     subject: $subject,
                     addTopic: $deleteSubject,
-                    isEditSubject: $isEditedSubject,
+                    isEditSubject: $isEditSubject,
                     editedSubject: $editedSubject,
                     layout: layout
                 )
                 TabView {
-                    let array = Array(subject.topics.keys)
-                    ForEach(array, id: \.self) { key in
-                        let index = array.firstIndex(where: { $0.uuidString == key.uuidString }) ?? 0
-                        TopicView(topic: Binding(get: {
-                            subject.topics[key]!
-                        }, set: {
-                            subject.topics[key]! = $0
-                        }), index: index)
+                    ForEach(store.serveTopics(subject: subject), id: \.index) { index, topic in
+                        TopicView(topic: topic, index: index)
                             .scaleEffect(pressed ? 0.95 : 1)
                             .tabItem {
                                 Image(systemName: "\(index + 1).circle.fill")
@@ -50,7 +44,7 @@ struct SubjectView: View {
                                 }
                             }, perform: {
                                 presentCards.toggle()
-                                selectedTopic = subject.topics[key]!
+                                selectedTopic = topic
                             })
                             .tag(index)
                     }
@@ -71,8 +65,8 @@ struct SubjectView: View {
                     .zIndex(1)
             }
         }
-        .sheet(isPresented: $isEditedSubject) {
-            SubjectEditView(layout: layout, subject: $subject, editedSubject: $editedSubject, editSubject: $isEditedSubject, oldSubjectName: $oldSubjectName)
+        .sheet(isPresented: $isEditSubject) {
+            SubjectEditView(layout: layout, subject: $subject, editSubject: $isEditSubject, oldSubjectName: $oldSubjectName)
                 .onAppear {
                     oldSubjectName = subject.title
                 }
@@ -96,8 +90,6 @@ struct SubjectView: View {
     SubjectView(
         subjects: .constant(Subject.sample),
         subject: .constant(Subject.sample[0]),
-        editedSubject: .constant(Subject.emptySubject),
-        isEditedSubject: .constant(false),
         layout: currentLayout)
     .environmentObject(LibraryViewViewModel())
 }

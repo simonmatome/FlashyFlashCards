@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct TopicView: View {
-    @Binding var topic: Topic
+    var topic: Topic
     var index: Int
     
     // This property will be used once we use incoporate the timer.
@@ -71,5 +71,5 @@ struct TopicView: View {
 }
 
 #Preview {
-    TopicView(topic: .constant(Topic.sample[0]), index: 2)
+    TopicView(topic: Topic.sample[0], index: 2)
 }

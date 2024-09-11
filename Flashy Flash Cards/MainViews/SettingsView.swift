@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SettingsView: View {
+    let layout: LayoutProperties
     @EnvironmentObject var vm: SettingsViewViewModel
     @EnvironmentObject var store: LibraryViewViewModel
     @EnvironmentObject var dayCards: DayCardsViewViewModel
@@ -30,11 +31,11 @@ struct SettingsView: View {
                     }))
                     Divider()
                     HStack {
-                        Button("Clear all subjects from Flashy Flash") {
-                            store.resetTransfer()
-                            dayCards.resetModel()
-                        }
-                        .tint(.blue)
+                        Text("Clear all subjects from Flashy Flash")
+                            .foregroundStyle(Color.blue)
+                            .onTapGesture {
+                                vm.popOverOne.toggle()
+                            }
                         Spacer()
                         Image(systemName: "questionmark.circle")
                             .onTapGesture {
@@ -55,12 +56,49 @@ struct SettingsView: View {
                             }
                         : nil
                     }
+                    .popover(isPresented: $vm.popOverOne) {
+                        VStack {
+                            Text("Are you sure you want to clear all subjects?")
+                                .lineLimit(2)
+                                .multilineTextAlignment(.center)
+                            Spacer()
+                            Divider()
+                                .fontWeight(.bold)
+                            HStack(spacing: 20) {
+                                Button {
+                                    vm.popOverOne.toggle()
+                                } label: {
+                                    Text("Cancel")
+                                        .foregroundStyle(Color.blue)
+                                        .font(.headline)
+                                        .padding()
+                                }
+                                Button {
+                                    store.resetTransfer()
+                                    dayCards.resetModel()
+                                    vm.popOverOne.toggle()
+                                } label: {
+                                    Label("Delete", systemImage: "trash.fill")
+                                        .foregroundStyle(Color.red)
+                                        .font(.headline)
+                                        .padding()
+                                        .background(Color.gray.opacity(0.2).roundedCorner(4,corners: .allCorners))
+                                }
+
+                            }
+                        }
+                        .padding()
+                        .frame(width: layout.width * 0.8, height: layout.height * 0.20)
+                        .frame(maxHeight: layout.height * 0.5)
+                        .presentationCompactAdaptation(.popover)
+                    }
                     Divider()
                     HStack {
-                        Button("Delete all subjects from the library") {
-                            store.emptyLibrary()
-                        }
-                        .tint(.blue)
+                        Text("Delete all subjects from the library")
+                            .foregroundStyle(Color.blue)
+                            .onTapGesture {
+                                vm.popOverTwo.toggle()
+                            }
                         Spacer()
                         Image(systemName: "questionmark.circle")
                             .onTapGesture {
@@ -81,6 +119,42 @@ struct SettingsView: View {
                             }
                         : nil
                     }
+                    .popover(isPresented: $vm.popOverTwo) {
+                        VStack {
+                            Text("Are you sure you want to delete all subjects?")
+                                .lineLimit(2)
+                                .multilineTextAlignment(.center)
+                            Spacer()
+                            Divider()
+                            HStack(spacing: 20) {
+                                Button {
+                                    vm.popOverTwo.toggle()
+                                } label: {
+                                    Text("Cancel")
+                                        .foregroundStyle(Color.blue)
+                                        .font(.headline)
+                                        .padding()
+                                }
+                                Button {
+                                    store.emptyLibrary()
+                                    dayCards.resetModel()
+                                    vm.popOverTwo.toggle()
+                                } label: {
+                                    Label("Delete", systemImage: "trash.fill")
+                                        .foregroundStyle(Color.red)
+                                        .font(.headline)
+                                        .padding()
+                                        .background(Color.gray.opacity(0.2).roundedCorner(4,corners: .allCorners))
+                                }
+
+                            }
+                        }
+                        .padding()
+                        .frame(width: layout.width * 0.8, height: layout.height * 0.20)
+                        .frame(maxHeight: layout.height * 0.5)
+                        .presentationCompactAdaptation(.popover)
+                    }
+
                 }
                 .padding(.horizontal)
                 .padding(.top, 4)
@@ -90,12 +164,12 @@ struct SettingsView: View {
                 Spacer()
             }
         }
-    }    
+    }
 }
 
 #Preview {
     NavigationStack {
-        SettingsView()
+        SettingsView(layout: currentLayout)
             .environmentObject(SettingsViewViewModel())
             .environmentObject(LibraryViewViewModel())
             .environmentObject(DayCardsViewViewModel())

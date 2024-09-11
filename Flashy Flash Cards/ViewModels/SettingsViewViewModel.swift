@@ -13,6 +13,8 @@ final class SettingsViewViewModel: ObservableObject {
     @Published var backgroundTheme: Color = Color(red: 173/255, green: 201/255, blue: 237/255)
     @Published var overlayMessage: Bool = false
     @Published var libraryOverlay: Bool = false
+    @Published var popOverOne: Bool = false
+    @Published var popOverTwo: Bool = false
     
     init() {
         if (bgColor != "") {

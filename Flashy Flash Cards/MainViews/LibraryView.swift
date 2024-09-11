@@ -18,8 +18,6 @@ struct LibraryView: View {
     
     @State private var selectedItem: String? = nil
     @State private var addSubject: Bool = false
-    @State private var isEditSubject: Bool = false
-    @State private var editedSubject: Subject = Subject.emptySubject
 
     
     var body: some View {
@@ -30,20 +28,12 @@ struct LibraryView: View {
                     ScrollView {
                         LazyVStack(spacing: 40) {
                             ForEach($store.subjects) { $subject in
-                                SubjectView(
-                                    subjects: $store.subjects,
-                                    subject: $subject,
-                                    editedSubject: $editedSubject,
-                                    isEditedSubject: $isEditSubject,
-                                    layout: layout)
+                                SubjectView(subjects: $store.subjects, subject: $subject, layout: layout)
                                     .scrollTransition { content, phase in
                                         content
                                             .scaleEffect(
                                                 x: phase.isIdentity ? 1.0 : 0.7,
                                                 y: phase.isIdentity ? 1.0 : 0.7
-                                            )
-                                            .offset(
-                                                x: phase.isIdentity ? 0 : 200
                                             )
                                             .opacity(phase.isIdentity ? 1 : 0.5)
                                     }
@@ -107,7 +97,7 @@ struct SubjectsView_Previews: PreviewProvider {
                     .tabItem {
                         Label("Library", systemImage: "books.vertical.fill")
                     }
-                SettingsView()
+                SettingsView(layout: currentLayout)
                     .tabItem {
                         Label("Settings", systemImage: "gearshape.fill")
                     }

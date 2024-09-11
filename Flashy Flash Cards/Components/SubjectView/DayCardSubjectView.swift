@@ -36,7 +36,6 @@ struct DayCardSubjectView: View {
                             selectedTopic = subject.topics[key]!
                         })
                         .tag(key)
-                    //                                    TopicCard(card: subject)
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .automatic))

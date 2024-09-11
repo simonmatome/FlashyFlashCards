@@ -11,10 +11,12 @@ import Combine
 
 @MainActor
 class DayCardsViewViewModel: ObservableObject {
+    
     @Published var table: [FileRating: [UUID: Subject]] = [:]
     @Published var boxes: [FileRating: [Subject]] = [:]
     @Published var topicNamesData: [String: [String]] = [:]
     @Published var badgeNumber: Int = 0
+    
     var cancellables = Set<AnyCancellable>()
     
     // Main buffer to create boxes to hold subjects
@@ -113,18 +115,17 @@ class DayCardsViewViewModel: ObservableObject {
         }
         return topicStats
     }
-
+    
+    /// Method to serve topics to the 
 // MARK: Methods to deal with property updates
     
     /// Method to update a card that has been edited which exists in the buffer or boxes
     func updateCard(card: FlashCardModel, topicID: UUID, subject: String) {
         for (box, subjects) in boxes {
-            if let subjectIndex = subjects.firstIndex(where: { $0.title == subject }) {
-                if boxes[box]![subjectIndex].topics[topicID] != nil {
-                    if let cardIndex = boxes[box]![subjectIndex].topics[topicID, default: Topic.emptyTopic].flashCards.firstIndex(where: { $0.id == card.id }) {
-                        boxes[box]![subjectIndex].topics[topicID, default: Topic.emptyTopic].flashCards[cardIndex] = card
-                    }
-                }
+            if let subjectIndex = subjects.firstIndex(where: { $0.title == subject }),
+               boxes[box]![subjectIndex].topics[topicID] != nil,
+               let cardIndex = boxes[box]![subjectIndex].topics[topicID, default: Topic.emptyTopic].flashCards.firstIndex(where: { $0.id == card.id }){
+                boxes[box]![subjectIndex].topics[topicID, default: Topic.emptyTopic].flashCards[cardIndex] = card
             }
         }
         for (box, subjects) in buffer {
@@ -314,13 +315,27 @@ class DayCardsViewViewModel: ObservableObject {
             } else {
                 notificationHandler.scheudleNotification(time: newTopic.delay, topic: newTopic.name, rating: rating)
                 DispatchQueue.main.asyncAfter(deadline: .now() + newTopic.delay) { [weak self] in
-                    self?.boxes[rating, default: []][subjectIndex].topics[newTopic.id] = newTopic
+                    guard let self = self else { return }
+                    if self.boxes[rating, default: []][subjectIndex].topics.contains(where: { $0.key == newTopic.id }) {
+                        self.boxes[rating]![subjectIndex].topics[topic.id]!.flashCards += bufferCards
+                    } else {
+                        self.boxes[rating, default: []][subjectIndex].topics[newTopic.id] = newTopic
+                    }
                 }
             }
         } else {
             notificationHandler.scheudleNotification(time: newTopic.delay, topic: newTopic.name, rating: rating)
             DispatchQueue.main.asyncAfter(deadline: .now() + newTopic.delay) { [weak self] in
-                self?.boxes[rating, default: []].insert(newSubject, at: 0)
+                guard let self = self else { return }
+                if let subjectIndex = self.boxes[rating, default: []].firstIndex(where: { $0.title == subject.title }) {
+                    if self.boxes[rating, default: []][subjectIndex].topics.contains(where: { $0.key == newTopic.id }) {
+                        self.boxes[rating, default: []][subjectIndex].topics[newTopic.id]!.flashCards += bufferCards
+                    } else {
+                        self.boxes[rating, default: []][subjectIndex].topics[newTopic.id] = newTopic
+                    }
+                } else {
+                    self.boxes[rating, default: []].insert(newSubject, at: 0)
+                }
             }
         }
     }
@@ -393,6 +408,7 @@ class DayCardsViewViewModel: ObservableObject {
                         boxContents[subjectIndex] = subjectContent
                     }
                 }
+                try await save(path: .cards_data, cards: boxes)
                 try await load(path: .cards_data)
             } catch {
                 print("failed to run the load function")
@@ -424,11 +440,6 @@ class DayCardsViewViewModel: ObservableObject {
                     } else {
                         self.boxes[location.rating, default: []] += [Subject(title: subject.title, topics: [inTopic.id: inTopic], marker: subject.marker, background: subject.fileBackground)]
                     }
-                    Task {
-                        do {
-                            try await self.save(path: .cards_data, cards: self.boxes)
-                        }
-                    }
                 }
             }
         }
@@ -443,15 +454,17 @@ class DayCardsViewViewModel: ObservableObject {
                 subject.topics[topic.id] = topic
             } else {
                 notificationHandler.scheudleNotification(time: delay, topic: topic.name, rating: location.rating)
+                let sub = subject
                 DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
                     guard let self = self else { return }
                     if self.boxes[location.rating, default: []].indices.contains(location.subjectIndex) {
-                        self.boxes[location.rating]![location.subjectIndex].topics[topic.id] = topic
-                    }
-                    Task {
-                        do {
-                            try await self.save(path: .cards_data, cards: self.boxes)
+                        if self.boxes[location.rating]![location.subjectIndex].topics.contains(where: { $0.key == topic.id }) {
+                            self.boxes[location.rating]![location.subjectIndex].topics[topic.id]!.flashCards += topic.flashCards
+                        } else {
+                            self.boxes[location.rating]![location.subjectIndex].topics[topic.id] = topic
                         }
+                    } else {
+                        self.boxes[location.rating, default: []] += [Subject(title: sub.title, topics: [topic.id: topic], marker: sub.marker, background: sub.fileBackground)]
                     }
                 }
             }
@@ -492,10 +505,6 @@ class DayCardsViewViewModel: ObservableObject {
             if !newSubject.topics.isEmpty {
                 self.boxes[box, default: []].append(newSubject)
                 print("Successfuly added the overdue topics:\n\(boxes[box]!)")
-                Task {
-                    try await save(path:.cards_data, cards: boxes)
-                }
-
             }
         }
     }

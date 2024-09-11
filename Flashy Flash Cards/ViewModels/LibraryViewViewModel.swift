@@ -26,7 +26,25 @@ class LibraryViewViewModel: ObservableObject {
             }
         }
     }
-        
+    
+    /// Method to serve topics to the subject view
+    func serveTopics(subject: Subject) -> [(index: Int, topic: Topic)] {
+        var topics = [(index: Int, topic: Topic)]()
+        var count = 0
+        for key in subject.topics.keys {
+            topics.append((index: count, topic: subject.topics[key]!))
+            count += 1
+        }
+        return topics
+    }
+    
+    /// Method to update subject
+//    func updateSubject(subject: Subject) {
+//        guard let index = subjects.firstIndex(where: { $0.id == subject.id }) else { return }
+//        subjects.remove(at: index)
+//        subjects.insert(subject, at: 0)
+//    }
+    
     /// Method to delete all subjects in the library
     func emptyLibrary() {
         self.subjects = []

@@ -15,36 +15,24 @@ struct AddSubjectView: View {
     
     /// Empty subject to add a new one
     @State private var subject: Subject = Subject.emptySubject
+    @State private var selection: SubjectTheme = .cesmic_orange
     
     var body: some View {
-        NavigationStack {
-            SubjectSkeleton(layout: layout, subject: $subject)
-                .navigationTitle("Add Subject")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("Cancel") {
-                            subject = Subject.emptySubject
-                            addSubject = false
-                        }
-                    }
-                    
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("Save") {
-                            subjects.append(subject)
-                            Task {
-                                do {
-                                    try await store.save(subjects: store.subjects)
-                                } catch {
-                                    print(error)
-                                }
-                            }
-                            addSubject = false
-                        }
-                        .disabled(subject.title.isEmpty)
+            SubjectSkeleton(layout: layout, subject: $subject, selection: $selection, isNewSubject: true) {
+                subject = Subject.emptySubject
+                addSubject = false
+            } confirmLogic: {
+                subject.marker = selection
+                subjects.append(subject)
+                Task {
+                    do {
+                        try await store.save(subjects: store.subjects)
+                    } catch {
+                        print(error)
                     }
                 }
-        }
+                addSubject = false
+            }
     }
     
 }
