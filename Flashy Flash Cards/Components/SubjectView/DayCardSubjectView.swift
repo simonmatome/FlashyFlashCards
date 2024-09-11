@@ -20,8 +20,9 @@ struct DayCardSubjectView: View {
         VStack {
             DaySubjectHeader(card: subject, layout: layout, rating: box)
             TabView {
-                ForEach(subject.topics.indices, id: \.self) { index in
-                    TopicCardView(layout: layout, topicIndex: index, topic: subject.topics[index])
+                ForEach(Array(subject.topics.keys.sorted()), id: \.self) { key in
+                    let index = Array(subject.topics.keys.sorted()).firstIndex(where: { $0.uuidString == key.uuidString }) ?? 0
+                    TopicCardView(layout: layout, topicIndex: index, topic: subject.topics[key]!)
                         .scaleEffect(contentPressed ? 0.95 : 1)
                         .tabItem {
                             Image(systemName: "\(index + 1).circle.fill")
@@ -32,9 +33,9 @@ struct DayCardSubjectView: View {
                             }
                         }, perform: {
                             performLogic()
-                            selectedTopic = subject.topics[index]
+                            selectedTopic = subject.topics[key]!
                         })
-                        .tag(index)
+                        .tag(key)
                     //                                    TopicCard(card: subject)
                 }
             }

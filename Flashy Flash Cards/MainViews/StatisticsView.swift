@@ -13,14 +13,14 @@ struct StatisticsView: View {
     let layout: LayoutProperties
     
     var body: some View {
-        if !flashFlashVM.topicNames().isEmpty {
+        if !flashFlashVM.topicNamesData.isEmpty {
             VStack {
                 Text("Statistics")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .foregroundStyle(bgColor.backgroundTheme.getContrastText())
                 ScrollView {
-                    ForEach(flashFlashVM.topicNames().sorted(by: {$0.key < $1.key}), id: \.key) { subject, topics in
+                    ForEach(flashFlashVM.topicNamesData.sorted(by: {$0.key < $1.key}), id: \.key) { subject, topics in
                         Section {
                             ForEach(topics, id: \.self) { topic in
                                 let topicStats = flashFlashVM.serveTopic(topic: topic)
@@ -48,6 +48,7 @@ struct StatisticsView: View {
                                 .font(.system(size: layout.customFontSize.extraLarge))
                                 .fontWeight(.bold)
                                 .padding(.top)
+                                .foregroundStyle(bgColor.backgroundTheme.getContrastText())
                         }
                     }
                 }

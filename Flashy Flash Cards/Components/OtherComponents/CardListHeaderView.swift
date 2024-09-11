@@ -36,7 +36,7 @@ struct CardListHeaderView: View {
             Image(systemName: "chevron.backward.circle.fill")
                 .font(.largeTitle)
                 .scaleEffect(subjects ? 0.9 : 1)
-                .foregroundStyle(settingsVM.backgroundTheme.inverted())
+                .foregroundStyle(Color.white.getContrastText())
                 .onLongPressGesture(minimumDuration: 0.1, pressing: { pressing in
                     withAnimation(.easeInOut(duration: 0.1)) {
                         subjects = pressing
@@ -48,21 +48,20 @@ struct CardListHeaderView: View {
             Text(topic)
                 .font(.system(size: layout.customFontSize.extraLarge))
                 .fontWeight(.bold)
-                .foregroundStyle(settingsVM.backgroundTheme.inverted())
+                .foregroundStyle(Color.white.getContrastText())
                 .multilineTextAlignment(.center)
             Spacer()
             if category == .library {
                 Image(systemName: "plus.rectangle.portrait.fill")
                     .font(.largeTitle)
                     .scaleEffect(pressed ? 0.9 : 1)
-                    .foregroundStyle(settingsVM.backgroundTheme.inverted())
-                    .onLongPressGesture(minimumDuration: 0.1, pressing: { pressing in
+                    .foregroundStyle(Color.white.getContrastText())
+                    .onTapGesture {
                         withAnimation(.easeInOut(duration: 0.1)) {
-                            pressed = pressing
+                            pressed.toggle()
+                            newCardLogic()
                         }
-                    }, perform: {
-                        newCardLogic()
-                    })
+                    }
             } else {
                 EmptyView()
             }

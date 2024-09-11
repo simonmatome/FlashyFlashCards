@@ -43,7 +43,6 @@ struct DeleteSubjectConfirmView: View {
                 .background(Color.gray.opacity(0.2).roundedCorner(10, corners: .allCorners))
                 
                 Button {
-                    // Need to add a method to delete subjects from the day cards when it is deleted in the library.
                     cardOfTheDay.deleteSubject(subject: subject.title)
                     subjects.removeAll { $0.title == subject.title }
                     Task {

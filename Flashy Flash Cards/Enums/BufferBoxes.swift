@@ -20,4 +20,14 @@ enum BufferBoxes: Int, Codable {
         case .box5: return 18
         }
     }
+    
+    var fileRating: FileRating {
+        switch self {
+        case .box1: return  .very_hard
+        case .box2: return  .hard
+        case .box3: return  .moderate
+        case .box4: return  .easy
+        case .box5: return  .very_easy
+        }
+    }
 }

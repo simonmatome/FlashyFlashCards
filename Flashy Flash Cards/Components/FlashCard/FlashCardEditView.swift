@@ -31,7 +31,7 @@ struct FlashCardEditView: View {
                             guard let cardIndex = topic.flashCards.firstIndex(where: { $0.id == editingCard.id }) else { return }
                             topic.flashCards[cardIndex] = editingCard
                             store.updateFlashCard(in: subject.id, topicID: topic.id, with: editingCard)
-                            flashVM.updateCard(card: editingCard, topic: topic.name, subject: subject.title)
+                            flashVM.updateCard(card: editingCard, topicID: topic.id, subject: subject.title)
                             isEditingCurrentCard = false
                         }
                     }

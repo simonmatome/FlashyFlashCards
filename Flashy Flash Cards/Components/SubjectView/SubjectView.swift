@@ -19,6 +19,7 @@ struct SubjectView: View {
     @State private var deleteSubject: Bool = false
     @State private var presentCards: Bool = false
     @State private var selectedTopic: Topic = Topic.emptyTopic
+    @State private var oldSubjectName = ""
     
     var body: some View {
         ZStack {
@@ -31,8 +32,14 @@ struct SubjectView: View {
                     layout: layout
                 )
                 TabView {
-                    ForEach($subject.topics.indices, id: \.self) { index in
-                        TopicView(topic: $subject.topics[index], index: index)
+                    let array = Array(subject.topics.keys)
+                    ForEach(array, id: \.self) { key in
+                        let index = array.firstIndex(where: { $0.uuidString == key.uuidString }) ?? 0
+                        TopicView(topic: Binding(get: {
+                            subject.topics[key]!
+                        }, set: {
+                            subject.topics[key]! = $0
+                        }), index: index)
                             .scaleEffect(pressed ? 0.95 : 1)
                             .tabItem {
                                 Image(systemName: "\(index + 1).circle.fill")
@@ -43,7 +50,7 @@ struct SubjectView: View {
                                 }
                             }, perform: {
                                 presentCards.toggle()
-                                selectedTopic = subject.topics[index]
+                                selectedTopic = subject.topics[key]!
                             })
                             .tag(index)
                     }
@@ -65,7 +72,10 @@ struct SubjectView: View {
             }
         }
         .sheet(isPresented: $isEditedSubject) {
-            SubjectEditView(layout: layout, subject: $subject, editedSubject: $editedSubject, editSubject: $isEditedSubject)
+            SubjectEditView(layout: layout, subject: $subject, editedSubject: $editedSubject, editSubject: $isEditedSubject, oldSubjectName: $oldSubjectName)
+                .onAppear {
+                    oldSubjectName = subject.title
+                }
         }
         .fullScreenCover(isPresented: $presentCards) {
 //            Task {

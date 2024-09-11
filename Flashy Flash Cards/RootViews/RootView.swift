@@ -20,7 +20,7 @@ struct RootView: View {
                     .tabItem {
                         Label("Flashy Flash", systemImage: "book.pages.fill")
                     }
-                    .badge(flahsyVM.updateBadge())
+                    .badge(flahsyVM.badgeNumber)
                     .tag("flashy-flash")
                 
                 LibraryView(layout: layoutProps)

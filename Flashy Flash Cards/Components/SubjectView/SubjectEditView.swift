@@ -14,6 +14,7 @@ struct SubjectEditView: View {
     @Binding var subject: Subject
     @Binding var editedSubject: Subject
     @Binding var editSubject: Bool
+    @Binding var oldSubjectName: String
     
     var body: some View {
         NavigationStack {
@@ -31,9 +32,9 @@ struct SubjectEditView: View {
                         Button("Done") {
                             subject = editedSubject
                             editedSubject = Subject.emptySubject
-                            flashyFlashVM.updateSubjectTheme(subject: subject)
-                            subject.topics.forEach { topic in
-                                flashyFlashVM.updateReviewIntervals(subject: subject.title, topic: topic.name, reviewIntervals: topic.reviewIntervals)
+                            flashyFlashVM.updateSubjectTheme(subject: subject, oldSubjectName: oldSubjectName)
+                            subject.topics.values.forEach { topic in
+                                flashyFlashVM.updateReviewIntervals(subject: subject.title, topic: topic)
                             }
                             Task {
                                 do {

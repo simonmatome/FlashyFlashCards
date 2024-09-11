@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 /// Based on code from apple
 ///  https://developer.apple.com/tutorials/app-dev-training/persisting-data
@@ -13,6 +14,8 @@ import Foundation
 @MainActor
 class LibraryViewViewModel: ObservableObject {
     @Published var subjects: [Subject] = []
+    
+    var cancellables = Set<AnyCancellable>()
     
     init() {
         Task {
@@ -23,7 +26,7 @@ class LibraryViewViewModel: ObservableObject {
             }
         }
     }
-    
+        
     /// Method to delete all subjects in the library
     func emptyLibrary() {
         self.subjects = []
@@ -40,9 +43,9 @@ class LibraryViewViewModel: ObservableObject {
     /// Method to reset the transferedToDayCards property in the FlashCardModel
     func resetTransfer() {
         for subInd in subjects.indices {
-            for topInd in subjects[subInd].topics.indices {
-                for cardInd in subjects[subInd].topics[topInd].flashCards.indices {
-                    subjects[subInd].topics[topInd].flashCards[cardInd].transferedToCardOfTheDay = false
+            for topId in subjects[subInd].topics.keys {
+                for cardInd in subjects[subInd].topics[topId]!.flashCards.indices {
+                    subjects[subInd].topics[topId]!.flashCards[cardInd].transferedToCardOfTheDay = false
                 }
             }
         }
@@ -59,12 +62,11 @@ class LibraryViewViewModel: ObservableObject {
     /// Method to update specific flashcard in a specific topic of a specif subject after editing the card.
     func updateFlashCard(in subjectID: UUID, topicID: UUID,with flashCard: FlashCardModel) {
         guard let subjectIndex = subjects.firstIndex(where: { $0.id == subjectID }),
-              let topicIndex = subjects[subjectIndex].topics.firstIndex(where: { $0.id == topicID }),
-              let flashCardIndex = subjects[subjectIndex].topics[topicIndex].flashCards.firstIndex(where: { $0.id == flashCard.id })
+              let flashCardIndex = subjects[subjectIndex].topics[topicID]!.flashCards.firstIndex(where: { $0.id == flashCard.id })
         else {
             return
         }
-        subjects[subjectIndex].topics[topicIndex].flashCards[flashCardIndex] = flashCard
+        subjects[subjectIndex].topics[topicID]!.flashCards[flashCardIndex] = flashCard
         Task {
             do {
                 try await save(subjects: subjects)
@@ -81,33 +83,30 @@ class LibraryViewViewModel: ObservableObject {
     
     /// Method to update the transferedToCardOfTheDay property of a flash card in the library store after rating it for the first time.
     func cardRated(in subjectID: UUID, topicID: UUID, with card: FlashCardModel) {
-        guard let subjectIndex = subjects.firstIndex(where: { $0.id == subjectID }) else {
+        guard let subjectIndex = subjects.firstIndex(where: { $0.id == subjectID }),
+              let cardIndex = subjects[subjectIndex].topics[topicID]!.flashCards.firstIndex(where: { $0.id == card.id })
+        else {
             return
         }
-        guard let topicIndex = subjects[subjectIndex].topics.firstIndex(where: { $0.id == topicID }) else {
-            return
-        }
-        guard let cardIndex = subjects[subjectIndex].topics[topicIndex].flashCards.firstIndex(where: { $0.id == card.id }) else { return }
-        subjects[subjectIndex].topics[topicIndex].flashCards[cardIndex].transferedToCardOfTheDay = true
+        subjects[subjectIndex].topics[topicID]!.flashCards[cardIndex].transferedToCardOfTheDay = true
     }
     
     
     /// Method to add flashcard to the topic in the library
     func addFlash(topic: Topic) {
-        guard let subjectIndex = subjects.firstIndex(where: { $0.topics.contains(where: { $0.name == topic.name })}) else { return }
-        subjects[subjectIndex].topics.removeAll(where: { $0.name == topic.name })
-        subjects[subjectIndex].topics.append(topic)
+        guard let subjectIndex = subjects.firstIndex(where: { $0.topics.contains(where: { $0.key == topic.id })})
+        else { return }
+        subjects[subjectIndex].topics[topic.id] = topic
     }
     
     /// Method to add a new flashcard to a specific topic to a specific subject
     func addFlashCard(to subjectID: UUID, topicID: UUID, flashCard: FlashCardModel) {
-        guard let subjectIndex = subjects.firstIndex(where: { $0.id == subjectID }),
-              let topicIndex = subjects[subjectIndex].topics.firstIndex(where: { $0.id == topicID })
+        guard let subjectIndex = subjects.firstIndex(where: { $0.id == subjectID })
         else {
             print("failed to save card")
             return
         }
-        subjects[subjectIndex].topics[topicIndex].flashCards.append(flashCard)
+        subjects[subjectIndex].topics[topicID]!.flashCards.append(flashCard)
         Task {
             do {
                 try await save(subjects: subjects)
@@ -120,12 +119,11 @@ class LibraryViewViewModel: ObservableObject {
     
     /// Method to delete selected flashCard
     func deleteFlashCard(in subjectID: UUID, topicID: UUID, flashCard: FlashCardModel) {
-        guard let subjectIndex = subjects.firstIndex(where: { $0.id == subjectID }),
-              let topicIndex = subjects[subjectIndex].topics.firstIndex(where: { $0.id == topicID })
-        else {
-            return
+        guard let subjectIndex = subjects.firstIndex(where: { $0.id == subjectID }) else { return }
+        subjects[subjectIndex].topics[topicID]!.flashCards.removeAll(where: { $0.id == flashCard.id})
+        if subjects[subjectIndex].topics[topicID]!.flashCards.isEmpty {
+            subjects[subjectIndex].topics.removeValue(forKey: topicID)
         }
-        subjects[subjectIndex].topics[topicIndex].flashCards.removeAll(where: { $0.id == flashCard.id})
         Task {
             do {
                 try await save(subjects: subjects)

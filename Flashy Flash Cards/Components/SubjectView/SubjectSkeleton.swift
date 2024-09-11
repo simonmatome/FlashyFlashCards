@@ -33,19 +33,27 @@ struct SubjectSkeleton: View {
                         .multilineTextAlignment(.center)
                 }
                 Section {
-                    ForEach($subject.topics) { $topic in
+                    ForEach(Array(subject.topics.keys), id: \.self) { key in
                         NavigationLink {
-                            EditTopicView(layout: layout, topic: $topic)
+                            EditTopicView(layout: layout, topic: Binding(get: {
+                                subject.topics[key]!
+                            }, set: {
+                                subject.topics[key]! = $0
+                            }))
                         } label: {
-                            Text("\(topic.name)")
+                            Text("\(subject.topics[key, default: Topic.emptyTopic].name)")
                                 .font(.system(size: layout.customFontSize.mediumLarge))
                         }
                     }
                     .onDelete { indices in
-                        // add logic to delete all instances of the topic from Flash Flash
-                        let name = subject.topics[Int(indices.first ?? 0)].name
-                        flashFlashVM.deleteTopic(topic: name)
-                        subject.topics.remove(atOffsets: indices)
+                        var topicID = UUID()
+                        let keys  = Array(subject.topics.keys)
+                        for index in indices {
+                            let keyToDelete = keys[index]
+                            topicID = keyToDelete
+                            subject.topics.removeValue(forKey: keyToDelete)
+                        }
+                        flashFlashVM.deleteTopic(topicID: topicID)
                     }
                     HStack {
                         TextField("Enter topic heading", text: $topicHeading)
@@ -53,7 +61,7 @@ struct SubjectSkeleton: View {
                             Button {
                                 withAnimation {
                                     let newTopic = Topic(name: topicHeading, flashCards: [])
-                                    subject.topics.append(newTopic)
+                                    subject.topics[newTopic.id] = newTopic
                                     topicHeading = ""
                                 }
                             } label: {

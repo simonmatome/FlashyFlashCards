@@ -10,6 +10,7 @@ import SwiftUI
 struct FlashCardView: View {
     @EnvironmentObject var store: LibraryViewViewModel
     @EnvironmentObject var cardOfTheDay: DayCardsViewViewModel
+    @EnvironmentObject var settingsVM: SettingsViewViewModel
     @Namespace var namespace
     @Binding var subject: Subject
     @Binding var topic: Topic
@@ -48,6 +49,8 @@ struct FlashCardView: View {
                         isEditingCurrentCard = true
                     } label: {
                         Text("Edit card")
+                            .fontWeight(.medium)
+                            .foregroundStyle(Color.blue)
                     }
                     Spacer()
                     Button {
@@ -62,6 +65,8 @@ struct FlashCardView: View {
                         }
                     } label: {
                         Text("Delete card")
+                            .fontWeight(.medium)
+                            .foregroundStyle(Color.red)
                     }
                 }
                 .padding(.top)

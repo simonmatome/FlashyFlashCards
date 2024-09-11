@@ -7,10 +7,15 @@
 
 import Foundation
 import SwiftUI
+import Combine
 
 @MainActor
 class DayCardsViewViewModel: ObservableObject {
+    @Published var table: [FileRating: [UUID: Subject]] = [:]
     @Published var boxes: [FileRating: [Subject]] = [:]
+    @Published var topicNamesData: [String: [String]] = [:]
+    @Published var badgeNumber: Int = 0
+    var cancellables = Set<AnyCancellable>()
     
     // Main buffer to create boxes to hold subjects
     private var buffer: [FileRating: [Subject]] = [:]
@@ -22,27 +27,67 @@ class DayCardsViewViewModel: ObservableObject {
     
     init() {
         reloadUIFromBuffer()
+        updateTopicNames()
+        updateBadge()
+        autoSave()
+    }
+    
+    /// Private method to do auto-save
+    private func autoSave() {
+        $boxes
+            .sink { box in
+                Task {
+                    do {
+                        try await self.save(path: .cards_data, cards: box)
+                    } catch {
+                        // need to start displaying these saving errors
+                        print(error)
+                    }
+                }
+            }
+            .store(in: &cancellables)
     }
     
     /// Method to update the badge
-    func updateBadge() -> Int {
-        var count = 0
-        for subjects in boxes.values {
-            subjects.forEach { subject in
-                count += subject.topics.count
+    private func updateBadge() {
+        $boxes
+            .map { (boxes) -> Int in
+                var count = 0
+                for subjects in boxes.values {
+                    subjects.forEach { subject in
+                        count += subject.topics.count
+                    }
+                }
+                return count
             }
-        }
-        return count
+            .sink { [weak self] number in
+                guard let self else { return }
+                self.badgeNumber = number
+            }
+            .store(in: &cancellables)
     }
     
 // MARK: Methods to serve the right data to the charts
     
+    /// Method to update the statistics in Statistics page
+    private func updateTopicNames() {
+        $boxes
+            .map { (boxes) -> [String: [String]] in
+                self.topicNames(boxes: boxes)
+            }
+            .sink { [weak self] names in
+                guard let self else { return }
+                self.topicNamesData = names
+            }
+            .store(in: &cancellables)
+    }
+    
     /// Method that returns a list of topic names that are contained in the boxes dictionary
-    func topicNames() -> [String: [String]] {
+    func topicNames(boxes: [FileRating: [Subject]]) -> [String: [String]] {
         var topics = [String: [String]]()
         for subjects in boxes.values {
             subjects.forEach { subject in
-                subject.topics.forEach { topic in
+                subject.topics.values.forEach { topic in
                     if topics.keys.contains(subject.title) {
                         if !topics[subject.title,default: []].contains(topic.name) {
                             topics[subject.title, default: []].append(topic.name)
@@ -62,8 +107,8 @@ class DayCardsViewViewModel: ObservableObject {
         var topicStats = [TopicStat]()
         for (box, subjects) in boxes {
             subjects.forEach { subject in
-                guard let currentTopic = subject.topics.first(where: { $0.name == topic }) else { return }
-                topicStats.append(TopicStat(box: box, number: currentTopic.flashCards.count ))
+                guard let currenTopic = subject.topics.first(where: { $0.value.name == topic }) else { return }
+                topicStats.append(TopicStat(box: box, number: currenTopic.value.flashCards.count ))
             }
         }
         return topicStats
@@ -72,21 +117,21 @@ class DayCardsViewViewModel: ObservableObject {
 // MARK: Methods to deal with property updates
     
     /// Method to update a card that has been edited which exists in the buffer or boxes
-    func updateCard(card: FlashCardModel, topic: String, subject: String) {
+    func updateCard(card: FlashCardModel, topicID: UUID, subject: String) {
         for (box, subjects) in boxes {
             if let subjectIndex = subjects.firstIndex(where: { $0.title == subject }) {
-                if let topicIndex = subjects[subjectIndex].topics.firstIndex(where: { $0.name == topic }) {
-                    if let cardIndex = subjects[subjectIndex].topics[topicIndex].flashCards.firstIndex(where: { $0.id == card.id }) {
-                        boxes[box, default: []][subjectIndex].topics[topicIndex].flashCards[cardIndex] = card
+                if boxes[box]![subjectIndex].topics[topicID] != nil {
+                    if let cardIndex = boxes[box]![subjectIndex].topics[topicID, default: Topic.emptyTopic].flashCards.firstIndex(where: { $0.id == card.id }) {
+                        boxes[box]![subjectIndex].topics[topicID, default: Topic.emptyTopic].flashCards[cardIndex] = card
                     }
                 }
             }
         }
         for (box, subjects) in buffer {
             if let subjectIndex = subjects.firstIndex(where: { $0.title == subject }) {
-                if let topicIndex = subjects[subjectIndex].topics.firstIndex(where: { $0.name == topic }) {
-                    if let cardIndex = subjects[subjectIndex].topics[topicIndex].flashCards.firstIndex(where: { $0.id == card.id }) {
-                        buffer[box, default: []][subjectIndex].topics[topicIndex].flashCards[cardIndex] = card
+                if buffer[box]![subjectIndex].topics[topicID] != nil {
+                    if let cardIndex = buffer[box]![subjectIndex].topics[topicID, default: Topic.emptyTopic].flashCards.firstIndex(where: { $0.id == card.id }) {
+                        buffer[box]![subjectIndex].topics[topicID, default: Topic.emptyTopic].flashCards[cardIndex] = card
                     }
                 }
             }
@@ -102,18 +147,18 @@ class DayCardsViewViewModel: ObservableObject {
     }
     
     /// Method to update topic review Intervals for a particular topic
-    func updateReviewIntervals(subject: String, topic: String, reviewIntervals: [ReviewInterval]) {
+    func updateReviewIntervals(subject: String, topic: Topic) {
         for (box, subjects) in boxes {
             if let subjectIndex = subjects.firstIndex(where: { $0.title == subject }) {
-                if let topicIndex = subjects[subjectIndex].topics.firstIndex(where: { $0.name == topic }) {
-                    boxes[box, default: []][subjectIndex].topics[topicIndex].reviewIntervals = reviewIntervals
+                if boxes[box]![subjectIndex].topics[topic.id] != nil {
+                    boxes[box]![subjectIndex].topics[topic.id]!.reviewIntervals = topic.reviewIntervals
                 }
             }
         }
         for (box, subjects) in buffer {
             if let subjectIndex = subjects.firstIndex(where: { $0.title == subject }) {
-                if let topicIndex = subjects[subjectIndex].topics.firstIndex(where: { $0.name == topic }) {
-                    buffer[box, default: []][subjectIndex].topics[topicIndex].reviewIntervals = reviewIntervals
+                if buffer[box]![subjectIndex].topics[topic.id] != nil {
+                    buffer[box]![subjectIndex].topics[topic.id]!.reviewIntervals = topic.reviewIntervals
                 }
             }
         }
@@ -131,11 +176,16 @@ class DayCardsViewViewModel: ObservableObject {
     func deleteSubject(subject: String) {
         for (box, _) in boxes {
             boxes[box, default: []].removeAll(where: { $0.title == subject })
+            if boxes[box, default: []].isEmpty {
+                boxes.removeValue(forKey: box)
+            }
         }
         for (box, _) in buffer {
             buffer[box, default: []].removeAll(where: { $0.title == subject })
+            if buffer[box, default: []].isEmpty {
+                buffer.removeValue(forKey: box)
+            }
         }
-        
         Task {
             do {
                 try await save(path: .buffer_data)
@@ -146,16 +196,18 @@ class DayCardsViewViewModel: ObservableObject {
         }
     }
     
-    /// Method to update the theme of the subject file when updated from Library
-    func updateSubjectTheme(subject: Subject) {
+    /// Method to update the theme of the subject file as well as its title when updated from Library
+    func updateSubjectTheme(subject: Subject, oldSubjectName: String) {
         for (box, subjects) in boxes {
-            if let subjectIndex = subjects.firstIndex(where: { $0.title == subject.title }) {
+            if let subjectIndex = subjects.firstIndex(where: { $0.title == oldSubjectName }) {
+                boxes[box,default: []][subjectIndex].title = subject.title
                 boxes[box, default: []][subjectIndex].marker = subject.marker
                 boxes[box, default: []][subjectIndex].fileBackground = subject.fileBackground
             }
         }
         for (box, subjects) in buffer {
-            if let subjectIndex = subjects.firstIndex(where: { $0.title == subject.title }) {
+            if let subjectIndex = subjects.firstIndex(where: { $0.title == oldSubjectName }) {
+                buffer[box,default: []][subjectIndex].title = subject.title
                 buffer[box, default: []][subjectIndex].marker = subject.marker
                 buffer[box, default: []][subjectIndex].fileBackground = subject.fileBackground
             }
@@ -171,11 +223,11 @@ class DayCardsViewViewModel: ObservableObject {
     }
     
     /// Method to delete instance of a topic from the buffer and boxes.
-    func deleteTopic(topic: String) {
+    func deleteTopic(topicID: UUID) {
         // First delete from the UI
         for (box, subjects) in boxes {
             for i in subjects.indices {
-                boxes[box, default: []][i].topics.removeAll(where: { $0.name == topic })
+                boxes[box, default: []][i].topics.removeValue(forKey: topicID)
                 // Delete subject from the UI if it does not have topics
                 if boxes[box, default: []][i].topics.isEmpty {
                     boxes[box, default: []].remove(at: i)
@@ -189,7 +241,7 @@ class DayCardsViewViewModel: ObservableObject {
         // Now delete the topic from the buffer
         for (box, subjects) in buffer {
             for i in subjects.indices {
-                buffer[box, default: []][i].topics.removeAll(where: { $0.name == topic })
+                buffer[box, default: []][i].topics.removeValue(forKey: topicID)
                 // Delete subject from the UI if it does not have topics
                 if buffer[box, default: []][i].topics.isEmpty {
                     buffer[box, default: []].remove(at: i)
@@ -235,10 +287,10 @@ class DayCardsViewViewModel: ObservableObject {
 // MARK: Methods dealing with the cards published variable
     
     /// Method to schedule the rated cards to appear in the UI after rating
-    private func scheduleCards(subject: Subject, topic: String, bufferCards: [FlashCardModel], box: BufferBoxes, reviewIntervals: [ReviewInterval]) {
-        var newTopic = Topic(name: topic, flashCards: bufferCards, reviewIntervals: reviewIntervals)
+    private func scheduleCards(subject: Subject, topic: Topic, bufferCards: [FlashCardModel], box: BufferBoxes) {
+        var newTopic = Topic(id: topic.id, name: topic.name, flashCards: bufferCards, reviewIntervals: topic.reviewIntervals)
         newTopic.topicDelay(box: box)
-        let newSubject = Subject(title: subject.title, topics: [newTopic], marker: subject.marker, background: subject.fileBackground)
+        let newSubject = Subject(title: subject.title, topics: [newTopic.id: newTopic], marker: subject.marker, background: subject.fileBackground)
         
         // Remove all empty subjects from the boxes array
         boxes.forEach { (rating, subjects) in
@@ -247,29 +299,22 @@ class DayCardsViewViewModel: ObservableObject {
                     boxes[rating, default: []].removeAll(where: { $0.title == current.title })
                 }
             }
+            if subjects.isEmpty {
+                boxes.removeValue(forKey: rating)
+            }
         }
         
-        let rating = FileRating(rawValue: box.rawValue) ?? FileRating.moderate
+        let rating = box.fileRating
         let currentBox = boxes[rating, default: []]
         // We accesss rating in boxes a lot in this code, this needs to be cleaned up
         
         if let subjectIndex = currentBox.firstIndex(where: { $0.title == subject.title }) {
-            if let topicIndex = currentBox[subjectIndex].topics.firstIndex(where: { $0.name == topic }) {
-                if currentBox[subjectIndex].topics[topicIndex].flashCards.isEmpty {
-                    self.boxes[rating, default: []][subjectIndex].topics[topicIndex].topicDelay(box: box)
-                    let topicNow = boxes[rating, default: []][subjectIndex].topics[topicIndex]
-                    notificationHandler.scheudleNotification(time: topicNow.delay, topic: topicNow.name, rating: rating)
-                    DispatchQueue.main.asyncAfter(deadline: .now() + topicNow.delay) { [weak self] in
-                        self?.boxes[rating, default: []][subjectIndex].topics[topicIndex].flashCards = bufferCards
-                    }
-                } else {
-                    // If the UI already has some cards inside the topic, we should append the current bufferCards to those
-                    boxes[rating, default: []][subjectIndex].topics[topicIndex].flashCards += bufferCards
-                }
+            if currentBox[subjectIndex].topics[topic.id] != nil {
+                boxes[rating]![subjectIndex].topics[topic.id]!.flashCards += bufferCards
             } else {
                 notificationHandler.scheudleNotification(time: newTopic.delay, topic: newTopic.name, rating: rating)
                 DispatchQueue.main.asyncAfter(deadline: .now() + newTopic.delay) { [weak self] in
-                    self?.boxes[rating, default: []][subjectIndex].topics.insert(newTopic, at: 0)
+                    self?.boxes[rating, default: []][subjectIndex].topics[newTopic.id] = newTopic
                 }
             }
         } else {
@@ -281,25 +326,24 @@ class DayCardsViewViewModel: ObservableObject {
     }
         
     /// Method to remove card from the UI
-    private func removeCardFromUI(card: FlashCardModel, subject: String, topic: String) {
+    private func removeCardFromUI(card: FlashCardModel, subject: String, topicID: UUID) {
         guard let rating = FileRating(rawValue: card.box),
-              let subjectIndex = boxes[rating, default: []].firstIndex(where: { $0.title == subject }),
-              let topicIndex = boxes[rating, default: []][subjectIndex].topics.firstIndex(where: { $0.name == topic })
+              let subjectIndex = boxes[rating, default: []].firstIndex(where: { $0.title == subject })
         else {
             print("Couldnt find topic the card belongs")
             return
         }
-        boxes[rating, default: []][subjectIndex].topics[topicIndex].flashCards.removeAll(where: { $0.id == card.id })
+        boxes[rating]![subjectIndex].topics[topicID]!.flashCards.removeAll(where: { $0.id == card.id })
         
         // Tower of doom is not ideal
-        if boxes[rating, default: []][subjectIndex].topics[topicIndex].flashCards.isEmpty {
-            boxes[rating, default: []][subjectIndex].topics.remove(at: topicIndex)
-            if boxes[rating, default: []][subjectIndex].topics.isEmpty {
-                boxes[rating, default: []].remove(at: subjectIndex)
-                if boxes[rating, default: []].isEmpty {
-                    boxes.removeValue(forKey: rating)
-                }
-            }
+        if boxes[rating]![subjectIndex].topics[topicID]!.flashCards.isEmpty {
+            boxes[rating, default: []][subjectIndex].topics.removeValue(forKey: topicID)
+        }
+        if boxes[rating, default: []][subjectIndex].topics.isEmpty {
+            boxes[rating, default: []].remove(at: subjectIndex)
+        }
+        if boxes[rating, default: []].isEmpty {
+            boxes.removeValue(forKey: rating)
         }
     }
     
@@ -325,16 +369,16 @@ class DayCardsViewViewModel: ObservableObject {
                         
                         var subjectContent = boxContents[subjectIndex]
                         
-                        for topic in subject.topics {
+                        for topic in subject.topics.values {
                             let timeElapsed = Date().timeIntervalSince(topic.dateAdded)
                             let overTime  = timeElapsed >= topic.delay
                             let difference = topic.delay - timeElapsed
                             
-                            if let topicIndex = subjectContent.topics.firstIndex(where: { $0.name == topic.name }) {
+                            if subjectContent.topics.contains(where: { $0.key == topic.id }) {
                                 updateOrScheduleFlashCards(
-                                    for: &subjectContent.topics[topicIndex],
+                                    for: &subjectContent.topics[topic.id]!,
                                     with: topic.flashCards,
-                                    at: (box, subjectIndex, topicIndex),
+                                    at: (box, subjectIndex),
                                     overTime: overTime, delay: difference
                                 )
                             } else {
@@ -360,22 +404,34 @@ class DayCardsViewViewModel: ObservableObject {
     private func updateOrScheduleFlashCards(
         for topic: inout Topic,
         with flashCards: [FlashCardModel],
-        at location: (rating: FileRating, subjectIndex: Int, topicIndex: Int),
+        at location: (rating: FileRating, subjectIndex: Int),
         overTime: Bool, delay: TimeInterval) {
-        if overTime {
-            topic.flashCards += flashCards
-        } else {
-            notificationHandler.scheudleNotification(time: delay, topic: topic.name, rating: location.rating)
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
-                guard let self = self else { return }
-                
-                if self.boxes[location.rating, default: []].indices.contains(location.subjectIndex),
-                   self.boxes[location.rating, default: []][location.subjectIndex].topics.indices.contains(location.topicIndex) {
-                    self.boxes[location.rating, default: []][location.subjectIndex].topics[location.topicIndex].flashCards += flashCards
+            let inTopic = topic
+            let subject = buffer[location.rating]![location.subjectIndex]
+            if overTime {
+                topic.flashCards += flashCards
+            } else {
+                notificationHandler.scheudleNotification(time: delay, topic: topic.name, rating: location.rating)
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                    guard let self = self else { return }
+                    
+                    if self.boxes[location.rating, default: []].indices.contains(location.subjectIndex) {
+                        if self.boxes[location.rating]![location.subjectIndex].topics.contains(where: { $0.key == inTopic.id }) {
+                            self.boxes[location.rating]![location.subjectIndex].topics[inTopic.id]!.flashCards += flashCards
+                        } else {
+                            self.boxes[location.rating]![location.subjectIndex].topics[inTopic.id] = inTopic
+                        }
+                    } else {
+                        self.boxes[location.rating, default: []] += [Subject(title: subject.title, topics: [inTopic.id: inTopic], marker: subject.marker, background: subject.fileBackground)]
+                    }
+                    Task {
+                        do {
+                            try await self.save(path: .cards_data, cards: self.boxes)
+                        }
+                    }
                 }
             }
         }
-    }
     
     // Helper to schedule topics from the buffer
     private func insertOrScheduleTopic(
@@ -384,13 +440,18 @@ class DayCardsViewViewModel: ObservableObject {
         with topic: Topic,
         overTime: Bool, delay: TimeInterval) {
             if overTime {
-                subject.topics.insert(topic, at: 0)
+                subject.topics[topic.id] = topic
             } else {
                 notificationHandler.scheudleNotification(time: delay, topic: topic.name, rating: location.rating)
                 DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
                     guard let self = self else { return }
                     if self.boxes[location.rating, default: []].indices.contains(location.subjectIndex) {
-                        self.boxes[location.rating, default: []][location.subjectIndex].topics.insert(topic, at: 0)
+                        self.boxes[location.rating]![location.subjectIndex].topics[topic.id] = topic
+                    }
+                    Task {
+                        do {
+                            try await self.save(path: .cards_data, cards: self.boxes)
+                        }
                     }
                 }
             }
@@ -398,30 +459,39 @@ class DayCardsViewViewModel: ObservableObject {
     
     // Helper to schedule or insert subject from buffer
     private func scheduleOrInsert(box: FileRating, subject: Subject) {
-        var newSubject = Subject(title: subject.title, topics: [], marker: subject.marker, background: subject.fileBackground)
+        var newSubject = Subject(title: subject.title, topics: [:], marker: subject.marker, background: subject.fileBackground)
 
-        for topic in subject.topics {
+        for topic in subject.topics.values {
             let timeElapsed = Date().timeIntervalSince(topic.dateAdded)
             let overTime = timeElapsed >= topic.delay
             let difference = topic.delay - timeElapsed
             
             if overTime {
-                newSubject.topics.append(topic)
+                newSubject.topics[topic.id] = topic
             } else {
                 notificationHandler.scheudleNotification(time: difference, topic: topic.name, rating: box)
                 DispatchQueue.main.asyncAfter(deadline: .now() + difference) { [weak self] in
                     guard let self = self else { return }
-                    if let subjectIndex = self.boxes[box]?.firstIndex(where: { $0.title == subject.title }) {
-                        self.boxes[box, default: []][subjectIndex].topics.insert(topic, at: 0)
+                    if let subjectIndex = self.boxes[box, default: []].firstIndex(where: { $0.title == subject.title }) {
+                        if self.boxes[box]![subjectIndex].topics.contains(where: { $0.key == topic.id }) {
+                            self.boxes[box]![subjectIndex].topics[topic.id]!.flashCards += topic.flashCards
+                        } else {
+                            self.boxes[box]![subjectIndex].topics[topic.id] = topic
+                        }
                     } else {
-                        newSubject.topics.insert(topic, at: 0)
+                        newSubject.topics[topic.id] = topic
                         self.boxes[box,default: []].insert(newSubject, at: 0)
+                    }
+                    Task {
+                        do {
+                            try await self.save(path: .cards_data, cards: self.boxes)
+                        }
                     }
                 }
             }
             if !newSubject.topics.isEmpty {
                 self.boxes[box, default: []].append(newSubject)
-                print("Successfuly added the overdue topics:\n\(boxes[box, default: []])")
+                print("Successfuly added the overdue topics:\n\(boxes[box]!)")
                 Task {
                     try await save(path:.cards_data, cards: boxes)
                 }
@@ -431,7 +501,7 @@ class DayCardsViewViewModel: ObservableObject {
     }
         
     /// Method to add cards to temporary buffer boxes and remove just rated cards from the boxes published variable
-    func rateCard(card: FlashCardModel, subject: String, topic: String, rating: Rating, category: Category) {
+    func rateCard(card: FlashCardModel, subject: String, topicID: UUID, rating: Rating, category: Category) {
         // Rate the card and append to the buffers
         var bufferCard = card
         bufferCard.rateCard(rating)
@@ -441,8 +511,8 @@ class DayCardsViewViewModel: ObservableObject {
         
         // Remove the old card from the main buffer and published array
         if category == .dayCards {
-            removeCardFromUI(card: card, subject: subject, topic: topic)
-            removeCardFromBuffer(card: card, subject: subject, topic: topic)
+            removeCardFromUI(card: card, subject: subject, topicID: topicID)
+            removeCardFromBuffer(card: card, subject: subject, topicID: topicID)
         }
     }
     
@@ -450,8 +520,8 @@ class DayCardsViewViewModel: ObservableObject {
     /// Method to add the just rated cards to main buffer box and and schedule to publisher
     func addToMainBox(subject: Subject, topic: Topic) {
         for (box, cardBox) in buffers where !cardBox.isEmpty {
-            addToMainBuffer(subject: subject, topic: topic.name, cards: cardBox, box: box, reviewIntervals: topic.reviewIntervals)
-            scheduleCards(subject: subject, topic: topic.name, bufferCards: cardBox, box: box, reviewIntervals: topic.reviewIntervals)
+            addToMainBuffer(subject: subject, topic: topic, cards: cardBox, box: box)
+            scheduleCards(subject: subject, topic: topic, bufferCards: cardBox, box: box)
         }
         // Reset the buffers immediately after ranking the cards
         buffers = [:]
@@ -460,25 +530,20 @@ class DayCardsViewViewModel: ObservableObject {
     // MARK: Private methods to work with the buffer
         
     /// Add cards to appropriate box in the main buffer
-    private func addToMainBuffer(subject: Subject, topic: String, cards: [FlashCardModel], box: BufferBoxes, reviewIntervals: [ReviewInterval]) {
-        var newTopic = Topic(name: topic, flashCards: cards, reviewIntervals: reviewIntervals) // Inherit review intervals
+    private func addToMainBuffer(subject: Subject, topic: Topic, cards: [FlashCardModel], box: BufferBoxes) {
+        // Inherit review intervals
+        var newTopic = Topic(id: topic.id, name: topic.name, flashCards: cards, reviewIntervals: topic.reviewIntervals)
         newTopic.topicDelay(box: box)
-        let newSubject = Subject(title: subject.title, topics: [newTopic], marker: subject.marker, background: subject.fileBackground)
+        let newSubject = Subject(title: subject.title, topics: [newTopic.id: newTopic], marker: subject.marker, background: subject.fileBackground)
 
-        let rating = FileRating(rawValue: box.rawValue) ?? FileRating.moderate // should remain in the current box if we dont get a rating back
+        let rating = box.fileRating // should remain in the current box if we dont get a rating back
         let currentBox = buffer[rating, default: []]
         
         if let subjectIndex = currentBox.firstIndex(where: { $0.title == subject.title }) {
-            if let topicIndex = currentBox[subjectIndex].topics.firstIndex(where: { $0.name == topic }) {
-                if currentBox[subjectIndex].topics[topicIndex].flashCards.isEmpty {
-                    buffer[rating, default: []][subjectIndex].topics[topicIndex].flashCards = cards
-                    buffer[rating, default: []][subjectIndex].topics[topicIndex].dateAdded = Date()
-                    buffer[rating, default: []][subjectIndex].topics[topicIndex].topicDelay(box: box)
-                } else {
-                    buffer[rating, default: []][subjectIndex].topics[topicIndex].flashCards += cards
-                }
+            if currentBox[subjectIndex].topics.contains(where: { $0.key == topic.id }) {
+                buffer[rating]![subjectIndex].topics[topic.id]!.flashCards += cards
             } else {
-                buffer[rating, default: []][subjectIndex].topics.insert(newTopic, at: 0)
+                buffer[rating]![subjectIndex].topics[topic.id] = newTopic
             }
         } else {
             buffer[rating, default: []].insert(newSubject, at: 0)
@@ -486,28 +551,23 @@ class DayCardsViewViewModel: ObservableObject {
     }
     
     /// Method to remove rated card from buffer
-    private func removeCardFromBuffer(card: FlashCardModel, subject: String, topic: String) {
+    private func removeCardFromBuffer(card: FlashCardModel, subject: String, topicID: UUID) {
         guard let rating = FileRating(rawValue: card.box),
-              let subjectIndex = buffer[rating, default: []].firstIndex(where: { $0.title == subject }),
-              let topicIndex = buffer[rating, default: []][subjectIndex].topics.firstIndex(where: { $0.name == topic })
+              let subjectIndex = buffer[rating, default: []].firstIndex(where: { $0.title == subject })
         else { return }
         
-        print("\nThe card rating is: \(rating)\n")
-        buffer[rating, default: []][subjectIndex].topics[topicIndex].flashCards.removeAll(where: { $0.id == card.id })
+        buffer[rating]![subjectIndex].topics[topicID]!.flashCards.removeAll(where: { $0.id == card.id })
         
-        // Tower of doom is not ideal
-        if buffer[rating, default: []][subjectIndex].topics[topicIndex].flashCards.isEmpty {
-            buffer[rating, default: []][subjectIndex].topics.remove(at: topicIndex)
-            print("Topic \(topic) is deleted\n")
-            if buffer[rating, default: []][subjectIndex].topics.isEmpty {
-                buffer[rating, default: []].remove(at: subjectIndex)
-                print("Subject \(subject) is deleted\n")
-                if buffer[rating, default: []].isEmpty {
-                    buffer.removeValue(forKey: rating)
-                    print("box with number \(rating.rawValue) is deleted\n")
-                }
-            }
+        if buffer[rating]![subjectIndex].topics[topicID]!.flashCards.isEmpty {
+            buffer[rating]![subjectIndex].topics.removeValue(forKey: topicID)
         }
+        if buffer[rating]![subjectIndex].topics.isEmpty {
+            buffer[rating, default: []].remove(at: subjectIndex)
+        }
+        if buffer[rating, default: []].isEmpty {
+            buffer.removeValue(forKey: rating)
+        }
+
 
     }
     

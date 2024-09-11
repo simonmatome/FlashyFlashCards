@@ -30,7 +30,7 @@ struct CardRatingView: View {
                             cardsOfTheDay.rateCard(
                                 card: flashcard,
                                 subject: subject.title,
-                                topic: topic.name,
+                                topicID: topic.id,
                                 rating: rating,
                                 category: category
                             )
@@ -67,8 +67,8 @@ struct CardRatingView: View {
                             cardsOfTheDay.rateCard(
                                 card: flashcard, 
                                 subject: subject.title,
-                                topic: topic.name,
-                                rating: rating, 
+                                topicID: topic.id,
+                                rating: rating,
                                 category: category
                             )
                             topic.flashCards.removeAll(where: { $0.id == flashcard.id })
@@ -103,7 +103,7 @@ struct CardRatingView: View {
 #Preview {
     CardRatingView(
         subject: Subject.sample[0],
-        topic: .constant(Subject.sample[0].topics[0]),
-        flashcard: .constant(Subject.sample[0].topics[0].flashCards[0]), category: .library)
+        topic: .constant(Topic.sample[0]),
+        flashcard: .constant(FlashCardModel.sample[0]), category: .library)
     .environmentObject(DayCardsViewViewModel())
 }
