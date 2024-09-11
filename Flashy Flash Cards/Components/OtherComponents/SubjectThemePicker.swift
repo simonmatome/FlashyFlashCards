@@ -21,5 +21,5 @@ struct SubjectThemePicker: View {
 }
 
 #Preview {
-    SubjectThemePicker(selection: .constant(.lunar_blue))
+    SubjectThemePicker(selection: .constant(.lunar_blu))
 }

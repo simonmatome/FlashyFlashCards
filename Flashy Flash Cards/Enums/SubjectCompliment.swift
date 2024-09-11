@@ -9,7 +9,7 @@ import SwiftUI
 
 extension SubjectTheme {
     enum SubjectCompliment: String, CaseIterable, Identifiable {
-        case blue_comp
+        case blu_comp
         case buff_comp
         case canary_comp
         case cesmic_comp
@@ -43,8 +43,8 @@ extension SubjectTheme {
     
     var fileBackground: Color {
         switch self {
-        case .blue:
-            return SubjectCompliment.blue_comp.ComplimentColor
+        case .blu:
+            return SubjectCompliment.blu_comp.ComplimentColor
         case .buff:
             return SubjectCompliment.buff_comp.ComplimentColor
         case .canary:
@@ -55,15 +55,15 @@ extension SubjectTheme {
             return SubjectCompliment.cherry_comp.ComplimentColor
         case .fireball_fuchsia:
             return SubjectCompliment.fireball_comp.ComplimentColor
-        case .gray:
+        case .grey:
             return .black
-        case .green:
+        case .gren:
             return .brown
         case .ivory:
             return SubjectCompliment.ivory_comp.ComplimentColor
         case .lift_off_lemon:
             return SubjectCompliment.lemon_comp.ComplimentColor
-        case .lunar_blue:
+        case .lunar_blu:
             return SubjectCompliment.lunar_comp.ComplimentColor
         case .orchid:
             return SubjectCompliment.orchid_comp.ComplimentColor
@@ -71,9 +71,9 @@ extension SubjectTheme {
             return SubjectCompliment.periwinkle_comp.ComplimentColor
         case .planetary_purple:
             return SubjectCompliment.planetary_comp.ComplimentColor
-        case .re_entry_red:
+        case .re_entry_rd:
             return SubjectCompliment.re_entry_comp.ComplimentColor
-        case .rocket_red:
+        case .rocket_rd:
             return SubjectCompliment.rocket_comp.ComplimentColor
         case .salmon:
             return SubjectCompliment.salmon_comp.ComplimentColor
