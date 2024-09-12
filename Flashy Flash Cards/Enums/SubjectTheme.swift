@@ -41,7 +41,15 @@ enum SubjectTheme: String, CaseIterable, Identifiable, Codable {
     }
     
     var name: String {
-        rawValue.replacing("_", with: " ").capitalized
+        switch self {
+        case .blu: return "Blue"
+        case .lunar_blu: return "Lunar Blue"
+        case .gren: return "Green"
+        case .grey: return "Gray"
+        case .re_entry_rd: return "Re-Entry Red"
+        case .rocket_rd: return "Rocket Red"
+        default: return rawValue.replacing("_", with: " ").capitalized
+        }
     }
     
     var id: String {
