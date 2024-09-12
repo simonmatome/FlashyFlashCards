@@ -38,7 +38,7 @@ struct SubjectSkeleton: View {
                         .multilineTextAlignment(.center)
                 }
                 Section {
-                    ForEach(Array($subject.topics.values), id: \.id) { $topic in
+                    ForEach(Array($subject.topics.values.sorted(by: { $0.id < $1.id })), id: \.id) { $topic in
                         NavigationLink {
                             EditTopicView(layout: layout, topic: $topic)
                         } label: {
