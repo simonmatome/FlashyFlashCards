@@ -78,11 +78,11 @@ struct SettingsView: View {
                                     dayCards.resetModel()
                                     vm.popOverOne.toggle()
                                 } label: {
-                                    Label("Delete", systemImage: "trash.fill")
+                                    Label("Clear", systemImage: "eraser.fill")
                                         .foregroundStyle(Color.red)
                                         .font(.headline)
                                         .padding()
-                                        .background(Color.gray.opacity(0.2).roundedCorner(4,corners: .allCorners))
+                                        .background(Color.gray.opacity(0.1).roundedCorner(4,corners: .allCorners))
                                 }
 
                             }
