@@ -229,13 +229,15 @@ class DayCardsViewViewModel: ObservableObject {
         for (box, subjects) in boxes {
             for i in subjects.indices {
                 boxes[box, default: []][i].topics.removeValue(forKey: topicID)
+                
                 // Delete subject from the UI if it does not have topics
                 if boxes[box, default: []][i].topics.isEmpty {
                     boxes[box, default: []].remove(at: i)
-                    // Delete the key and value pair if the value is null
-                    if boxes[box, default: []].isEmpty {
-                        boxes.removeValue(forKey: box)
-                    }
+                }
+                
+                // Delete the key and value pair if the value is null
+                if boxes[box, default: []].isEmpty {
+                    boxes.removeValue(forKey: box)
                 }
             }
         }
@@ -243,13 +245,15 @@ class DayCardsViewViewModel: ObservableObject {
         for (box, subjects) in buffer {
             for i in subjects.indices {
                 buffer[box, default: []][i].topics.removeValue(forKey: topicID)
+                
                 // Delete subject from the UI if it does not have topics
                 if buffer[box, default: []][i].topics.isEmpty {
                     buffer[box, default: []].remove(at: i)
-                    // Delete the key and value pair if the value is null
-                    if buffer[box, default: []].isEmpty {
-                        buffer.removeValue(forKey: box)
-                    }
+                }
+                
+                // Delete the key and value pair if the value is null
+                if buffer[box, default: []].isEmpty {
+                    buffer.removeValue(forKey: box)
                 }
             }
         }
