@@ -52,7 +52,6 @@
 		EBA919762C4DC8C0005BEFE4 /* CardTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA919752C4DC8C0005BEFE4 /* CardTimer.swift */; };
 		EBAAB8BC2C3B6DCD00DB4FAD /* CustomRectangleRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBAAB8BB2C3B6DCD00DB4FAD /* CustomRectangleRadius.swift */; };
 		EBAAB8BE2C3B734700DB4FAD /* SubjectMarkerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBAAB8BD2C3B734700DB4FAD /* SubjectMarkerView.swift */; };
-		EBAAB8C02C3B79A700DB4FAD /* AnimalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBAAB8BF2C3B79A700DB4FAD /* AnimalView.swift */; };
 		EBAAB8C22C3B9DF900DB4FAD /* SubjectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBAAB8C12C3B9DF900DB4FAD /* SubjectView.swift */; };
 		EBAAB8C42C3BA3E000DB4FAD /* StreakView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBAAB8C32C3BA3E000DB4FAD /* StreakView.swift */; };
 		EBAAB8C62C3BA52A00DB4FAD /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBAAB8C52C3BA52A00DB4FAD /* Color.swift */; };
@@ -63,7 +62,6 @@
 		EBAAB8D02C3BF20A00DB4FAD /* FlashCardAnswerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBAAB8CF2C3BF20A00DB4FAD /* FlashCardAnswerView.swift */; };
 		EBAAB8D22C3BF2F800DB4FAD /* SubjectFlashCardsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBAAB8D12C3BF2F800DB4FAD /* SubjectFlashCardsView.swift */; };
 		EBAAB8D42C3C9B5700DB4FAD /* AddSubjectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBAAB8D32C3C9B5700DB4FAD /* AddSubjectView.swift */; };
-		EBAAB8D62C3D7FF200DB4FAD /* ExampleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBAAB8D52C3D7FF200DB4FAD /* ExampleView.swift */; };
 		EBB3069C2C44794A00A0A8BB /* SubjectTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB3069B2C44794A00A0A8BB /* SubjectTheme.swift */; };
 		EBB3069E2C44911800A0A8BB /* SubjectTheme + Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB3069D2C44911800A0A8BB /* SubjectTheme + Extension.swift */; };
 		EBC7BACC2C4A02B4000EEC95 /* TimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBC7BACB2C4A02B4000EEC95 /* TimerView.swift */; };
@@ -133,7 +131,6 @@
 		EBA919752C4DC8C0005BEFE4 /* CardTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardTimer.swift; sourceTree = "<group>"; };
 		EBAAB8BB2C3B6DCD00DB4FAD /* CustomRectangleRadius.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomRectangleRadius.swift; sourceTree = "<group>"; };
 		EBAAB8BD2C3B734700DB4FAD /* SubjectMarkerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubjectMarkerView.swift; sourceTree = "<group>"; };
-		EBAAB8BF2C3B79A700DB4FAD /* AnimalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimalView.swift; sourceTree = "<group>"; };
 		EBAAB8C12C3B9DF900DB4FAD /* SubjectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubjectView.swift; sourceTree = "<group>"; };
 		EBAAB8C32C3BA3E000DB4FAD /* StreakView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreakView.swift; sourceTree = "<group>"; };
 		EBAAB8C52C3BA52A00DB4FAD /* Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
@@ -144,7 +141,6 @@
 		EBAAB8CF2C3BF20A00DB4FAD /* FlashCardAnswerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlashCardAnswerView.swift; sourceTree = "<group>"; };
 		EBAAB8D12C3BF2F800DB4FAD /* SubjectFlashCardsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubjectFlashCardsView.swift; sourceTree = "<group>"; };
 		EBAAB8D32C3C9B5700DB4FAD /* AddSubjectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddSubjectView.swift; sourceTree = "<group>"; };
-		EBAAB8D52C3D7FF200DB4FAD /* ExampleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleView.swift; sourceTree = "<group>"; };
 		EBB3069B2C44794A00A0A8BB /* SubjectTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubjectTheme.swift; sourceTree = "<group>"; };
 		EBB3069D2C44911800A0A8BB /* SubjectTheme + Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SubjectTheme + Extension.swift"; sourceTree = "<group>"; };
 		EBC7BACB2C4A02B4000EEC95 /* TimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerView.swift; sourceTree = "<group>"; };
@@ -268,7 +264,6 @@
 			isa = PBXGroup;
 			children = (
 				EB4C00D32C3B5FA700BB5E73 /* RootViews */,
-				EBD1A2952C5464F20076FAE0 /* PracticeViews */,
 				EB4C00D42C3B600F00BB5E73 /* Resourses */,
 				EB0BFAF02C572FEE00793293 /* Enums */,
 				EB4C00D52C3B60F800BB5E73 /* Extensions */,
@@ -313,7 +308,6 @@
 			isa = PBXGroup;
 			children = (
 				EB4C00C82C3B5F3E00BB5E73 /* Assets.xcassets */,
-				EB8E533B2C4FDE8800AA4D67 /* RectangleTimer.swift */,
 			);
 			path = Resourses;
 			sourceTree = "<group>";
@@ -372,6 +366,7 @@
 		EB8E53562C530C7000AA4D67 /* OtherComponents */ = {
 			isa = PBXGroup;
 			children = (
+				EB8E533B2C4FDE8800AA4D67 /* RectangleTimer.swift */,
 				EBAAB8C72C3BB20300DB4FAD /* HeaderView.swift */,
 				EBC7BACB2C4A02B4000EEC95 /* TimerView.swift */,
 				EBD0D0C12C5706BB0057C607 /* SubjectThemePicker.swift */,
@@ -389,15 +384,6 @@
 				EBC900B92C8E23AF0029DFFB /* ChartView.swift */,
 			);
 			path = StatisticsComponents;
-			sourceTree = "<group>";
-		};
-		EBD1A2952C5464F20076FAE0 /* PracticeViews */ = {
-			isa = PBXGroup;
-			children = (
-				EBAAB8BF2C3B79A700DB4FAD /* AnimalView.swift */,
-				EBAAB8D52C3D7FF200DB4FAD /* ExampleView.swift */,
-			);
-			path = PracticeViews;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -501,7 +487,6 @@
 				EBC900B72C8E0A0D0029DFFB /* TopicStat.swift in Sources */,
 				EB46367C2C74DECA00B0858E /* CardListHeaderView.swift in Sources */,
 				EBAAB8CE2C3BF18E00DB4FAD /* FlashCardQuestionView.swift in Sources */,
-				EBAAB8C02C3B79A700DB4FAD /* AnimalView.swift in Sources */,
 				EBB3069C2C44794A00A0A8BB /* SubjectTheme.swift in Sources */,
 				EB8E533E2C504B8300AA4D67 /* SubjectHeaderView.swift in Sources */,
 				EB8E534C2C52C77E00AA4D67 /* TimeInterval.swift in Sources */,
@@ -519,7 +504,6 @@
 				EB8E53582C53181500AA4D67 /* SubjectEditView.swift in Sources */,
 				EB06213A2C6D7820005AE36D /* FileRating.swift in Sources */,
 				EBCA38B52C716018005B7744 /* BufferBoxes.swift in Sources */,
-				EBAAB8D62C3D7FF200DB4FAD /* ExampleView.swift in Sources */,
 				EB7E4F102C40234F003AECD8 /* Topic.swift in Sources */,
 				EBC900B32C8B62840029DFFB /* ReviewInterval.swift in Sources */,
 				EBAAB8CA2C3BC42F00DB4FAD /* FlashCardView.swift in Sources */,
