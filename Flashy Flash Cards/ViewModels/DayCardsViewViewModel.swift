@@ -371,9 +371,7 @@ class DayCardsViewViewModel: ObservableObject {
             do {
                 try await load(path: .buffer_data)
                 try await load(path: .cards_data)
-                print("\nThe files have loaded, they are:\n \(print(Array(buffer)))\n")
                 for (box, subjects) in buffer {
-                    print("\nThe current box is: \(box.rawValue)\n")
                     var boxContents = boxes[box, default: []]
                     
                     for subject in subjects {
@@ -504,7 +502,6 @@ class DayCardsViewViewModel: ObservableObject {
             }
             if !newSubject.topics.isEmpty {
                 self.boxes[box, default: []].append(newSubject)
-                print("Successfuly added the overdue topics:\n\(boxes[box]!)")
             }
         }
     }
