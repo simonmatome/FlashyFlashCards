@@ -65,7 +65,7 @@
 		EBAAB8D42C3C9B5700DB4FAD /* AddSubjectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBAAB8D32C3C9B5700DB4FAD /* AddSubjectView.swift */; };
 		EBAAB8D62C3D7FF200DB4FAD /* ExampleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBAAB8D52C3D7FF200DB4FAD /* ExampleView.swift */; };
 		EBB3069C2C44794A00A0A8BB /* SubjectTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB3069B2C44794A00A0A8BB /* SubjectTheme.swift */; };
-		EBB3069E2C44911800A0A8BB /* SubjectCompliment.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB3069D2C44911800A0A8BB /* SubjectCompliment.swift */; };
+		EBB3069E2C44911800A0A8BB /* SubjectTheme + Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB3069D2C44911800A0A8BB /* SubjectTheme + Extension.swift */; };
 		EBC7BACC2C4A02B4000EEC95 /* TimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBC7BACB2C4A02B4000EEC95 /* TimerView.swift */; };
 		EBC7BACE2C4A086F000EEC95 /* CardRatingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBC7BACD2C4A086F000EEC95 /* CardRatingView.swift */; };
 		EBC7BAD02C4A0B5D000EEC95 /* Rating.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBC7BACF2C4A0B5D000EEC95 /* Rating.swift */; };
@@ -146,7 +146,7 @@
 		EBAAB8D32C3C9B5700DB4FAD /* AddSubjectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddSubjectView.swift; sourceTree = "<group>"; };
 		EBAAB8D52C3D7FF200DB4FAD /* ExampleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleView.swift; sourceTree = "<group>"; };
 		EBB3069B2C44794A00A0A8BB /* SubjectTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubjectTheme.swift; sourceTree = "<group>"; };
-		EBB3069D2C44911800A0A8BB /* SubjectCompliment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubjectCompliment.swift; sourceTree = "<group>"; };
+		EBB3069D2C44911800A0A8BB /* SubjectTheme + Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SubjectTheme + Extension.swift"; sourceTree = "<group>"; };
 		EBC7BACB2C4A02B4000EEC95 /* TimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerView.swift; sourceTree = "<group>"; };
 		EBC7BACD2C4A086F000EEC95 /* CardRatingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardRatingView.swift; sourceTree = "<group>"; };
 		EBC7BACF2C4A0B5D000EEC95 /* Rating.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rating.swift; sourceTree = "<group>"; };
@@ -185,7 +185,7 @@
 			children = (
 				EB0BFAEE2C572FC100793293 /* SubjectBackgroundTheme.swift */,
 				EBB3069B2C44794A00A0A8BB /* SubjectTheme.swift */,
-				EBB3069D2C44911800A0A8BB /* SubjectCompliment.swift */,
+				EBB3069D2C44911800A0A8BB /* SubjectTheme + Extension.swift */,
 				EBC7BACF2C4A0B5D000EEC95 /* Rating.swift */,
 				EB0621392C6D7820005AE36D /* FileRating.swift */,
 				EBCA38B22C713AD6005B7744 /* Category.swift */,
@@ -495,7 +495,7 @@
 				EBDA899E2C5DC6F400FB3E77 /* CardOfTheDayCardView.swift in Sources */,
 				EB8E53462C51EA0500AA4D67 /* CustomDimensValues.swift in Sources */,
 				EB4C00DB2C3B625C00BB5E73 /* SettingsView.swift in Sources */,
-				EBB3069E2C44911800A0A8BB /* SubjectCompliment.swift in Sources */,
+				EBB3069E2C44911800A0A8BB /* SubjectTheme + Extension.swift in Sources */,
 				EBAAB8BC2C3B6DCD00DB4FAD /* CustomRectangleRadius.swift in Sources */,
 				EB8E534A2C52B2EF00AA4D67 /* TrailingIconLabelStyle.swift in Sources */,
 				EBC900B72C8E0A0D0029DFFB /* TopicStat.swift in Sources */,

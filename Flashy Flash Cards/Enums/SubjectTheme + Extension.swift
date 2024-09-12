@@ -1,5 +1,5 @@
 //
-//  SubjectCompliment.swift
+//  SubjectTheme + Extension.swift
 //  Flashy Flash Cards
 //
 //  Created by Simon Matome on 15/07/2024.
@@ -33,7 +33,10 @@ extension SubjectTheme {
         }
         
         var comp: String {
-            rawValue.replacing("_comp", with: " compliment").capitalized
+            switch self {
+            case .blu_comp: return "Blue Compliment"
+            default: return rawValue.replacing("_comp", with: " compliment").capitalized
+            }
         }
         
         var id: String {
