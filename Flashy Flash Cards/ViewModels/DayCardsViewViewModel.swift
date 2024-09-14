@@ -354,7 +354,6 @@ class DayCardsViewViewModel: ObservableObject {
         }
         boxes[rating]![subjectIndex].topics[topicID]!.flashCards.removeAll(where: { $0.id == card.id })
         
-        // Tower of doom is not ideal
         if boxes[rating]![subjectIndex].topics[topicID]!.flashCards.isEmpty {
             boxes[rating, default: []][subjectIndex].topics.removeValue(forKey: topicID)
         }
