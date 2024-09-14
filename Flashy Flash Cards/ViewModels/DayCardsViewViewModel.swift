@@ -381,6 +381,13 @@ class DayCardsViewViewModel: ObservableObject {
                     for subject in subjects {
                         guard let subjectIndex = boxContents.firstIndex(where: { $0.title == subject.title }) else {
                             scheduleOrInsert(box: box, subject: subject)
+                            Task {
+                                do {
+                                    try await save(path: .cards_data, cards: boxes)
+                                } catch {
+                                    print(error)
+                                }
+                            }
                             continue
                         }
                         
