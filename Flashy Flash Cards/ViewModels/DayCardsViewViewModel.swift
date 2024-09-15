@@ -375,14 +375,14 @@ class DayCardsViewViewModel: ObservableObject {
                 try await load(path: .buffer_data)
                 try await load(path: .cards_data)
                 for (box, subjects) in buffer {
-                    var boxContents = boxes[box, default: []]
+                    var boxContents = self.boxes[box, default: []]
                     
                     for subject in subjects {
                         guard let subjectIndex = boxContents.firstIndex(where: { $0.title == subject.title }) else {
                             scheduleOrInsert(box: box, subject: subject)
                             Task {
                                 do {
-                                    try await save(path: .cards_data, cards: boxes)
+                                    try await save(path: .cards_data, cards: self.boxes)
                                 } catch {
                                     print(error)
                                 }

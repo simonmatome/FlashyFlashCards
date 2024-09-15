@@ -73,19 +73,19 @@ struct DayCardsView: View {
                 }
             }
         }
-        .onChange(of: scenePhase) {
-            if scenePhase == .background || scenePhase == .inactive {
-                Task {
-                    do {
-                        try await vm.save(path: .cards_data, cards: vm.boxes)
-                        try await vm.save(path: .buffer_data)
-                        try await store.save(subjects: store.subjects)
-                    } catch {
-                        print(error)
-                    }
-                }
-            }
-        }
+//        .onChange(of: scenePhase) {
+//            if scenePhase == .background || scenePhase == .inactive {
+//                Task {
+//                    do {
+//                        try await vm.save(path: .cards_data, cards: vm.boxes)
+//                        try await vm.save(path: .buffer_data)
+//                        try await store.save(subjects: store.subjects)
+//                    } catch {
+//                        print(error)
+//                    }
+//                }
+//            }
+//        }
         .task {
             do {
                 try await vm.load(path: .cards_data)

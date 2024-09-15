@@ -53,7 +53,7 @@ struct LibraryView: View {
                 }
             }
             .background(settingsVM.backgroundTheme)
-            .blur(radius: addSubject ? 3 : 0) // blur the library when add subject is visible
+            .blur(radius: addSubject ? 3 : 0)
             .sheet(isPresented: $addSubject) {
                 AddSubjectView(addSubject: $addSubject, subjects: $store.subjects, layout: layout)
             }
@@ -62,8 +62,6 @@ struct LibraryView: View {
                     Task {
                         do {
                             try await store.save(subjects: store.subjects)
-                            try await flashyFlashVM.save(path: .cards_data, cards: flashyFlashVM.boxes)
-                            try await flashyFlashVM.save(path: .buffer_data)
                         } catch {
                             print(error)
                         }
